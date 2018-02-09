@@ -1,0 +1,29 @@
+<div class="ibox float-e-margins">
+    <form name="infForm" novalidate>
+        <div class="ibox-content">
+            
+            <div jg-form-group = "report.informedBy">
+                <input name="informedBy" type="text" ng-model="ctrl.inf.informedBy" required/>
+            </div>
+
+            <div jg-form-group = "report.gsm">
+                <input name="gsm" type="text" ng-model="ctrl.inf.gsm"/>
+            </div>
+
+            <div jg-form-group = "report.text">
+                <textarea name="text" type="text" ng-model="ctrl.inf.text" required></textarea>
+            </div>
+
+            <div jg-form-group = "report.address">
+                <input name="address" type="text" ng-model="ctrl.inf.address" required/>
+            </div>
+
+            <div class="hr-line-dashed"></div>
+            <div class="row">
+                <div class="col-sm-12">
+                    <button type="submit" class="btn btn-primary" ng-click="ctrl.saveReport(infForm)">{{'report.send'| text}}</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>

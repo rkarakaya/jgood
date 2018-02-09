@@ -1,0 +1,13 @@
+apply plugin: "war"
+
+dependencies {
+    compile project(':app-common')
+    compile project(':app-dao')
+    compile project(':app-service')
+    compile libraries.spring_web
+    compile libraries.spring_security
+    compile libraries.javax_servlet_api
+    compile libraries.gson
+}
+
+

@@ -1,0 +1,323 @@
+import groovy.json.StringEscapeUtils
+
+buildscript {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        jcenter()
+    }
+
+    dependencies {
+        classpath "com.eriwen:gradle-js-plugin:1.12.1"
+        classpath "com.eriwen:gradle-css-plugin:2.12.0"
+    }
+}
+
+apply plugin: "js"
+apply plugin: 'css'
+apply plugin: 'distribution'
+
+configurations {
+    webjars
+    webjars.extendsFrom(compile)
+}
+
+
+dependencies {
+    webjars 'org.webjars.npm:angular:1.5.8'
+    webjars 'org.webjars:angular-ui-router:0.2.18'
+    webjars 'org.webjars.bower:angular-sanitize:1.5.8'
+    webjars 'org.webjars.bower:angular-animate:1.5.8'
+    webjars 'org.webjars:jquery:2.1.1'
+    webjars 'org.webjars:angular-ui-bootstrap:2.2.0'
+    webjars 'org.webjars:angular-ui-select:0.19.6'
+    webjars 'org.webjars.bower:angular-ui-validate:1.2.2'
+    webjars 'org.webjars.bower:angular-ui-mask:1.8.7'
+    webjars 'org.webjars.npm:underscore:1.8.3'
+    webjars 'org.webjars:underscore.string:2.3.3'
+    webjars 'org.webjars.npm:humanize:0.0.9'
+    webjars 'org.webjars.bower:ngstorage:0.3.11'
+    webjars 'org.webjars:bootstrap:3.3.4'
+    webjars 'org.webjars:font-awesome:4.7.0'
+    webjars 'org.webjars.bower:ngstorage:0.3.11'
+    
+}
+
+
+
+ext {
+	webappDir = project.projectDir.path + '/src/main/webapp'
+	cssFiles = [
+		"ext/webjar/font-awesome/css/font-awesome.css",
+		"ext/webjar/bootstrap/css/bootstrap.css",
+		"assets/css/style.css"
+	]
+	
+	extJsFiles = [
+		"ext/webjar/jquery/jquery.js",
+		"ext/metisMenu/jquery.metisMenu.js",
+		"ext/webjar/underscore/underscore.js",
+	    "ext/webjar/underscore.string/underscore.string.js",
+		"ext/webjar/angular/angular.js",
+		"ext/webjar/angular-ui-router/angular-ui-router.js",
+		"ext/webjar/angular-sanitize/angular-sanitize.js",
+		"ext/webjar/angular-animate/angular-animate.js",
+		"ext/webjar/angular-ui-bootstrap/ui-bootstrap-tpls.js",
+		"ext/webjar/angular-ui-validate/dist/validate.js",
+		"ext/webjar/ngstorage/ngStorage.js",
+		"ext/webjar/ngstorage/ngStorage.js",
+		"ext/angular-fn/fn-trim/fn-trim.js",
+		"ext/angular-fn/fn-block-ui/fn-block-ui.js",
+		"ext/angular-fn/fn-permission/fn-permission.js",
+		"ext/angular-fn/angular-fn.js"
+		
+	]
+}
+
+//extract web jar contents into src/main/webapp/ext/webjar
+task('webjar_extract', type: Copy) {
+	Set<String> processed = new HashSet()
+    configurations.webjars.each {jar ->
+
+        def config = configurations.webjars.resolvedConfiguration
+        
+        def artifact = config.resolvedArtifacts.find {
+            it.file.toString() == jar.absolutePath
+        }
+        
+        if(processed.contains(artifact.name)==false){
+        	processed.add(artifact.name);
+        	
+	        def upStreamVersion = "${artifact.moduleVersion.id.version}"
+	        upStreamVersion = upStreamVersion.replaceAll(/(-[\d.-]+)/, '')
+	        
+		    copy {
+	            from zipTree(jar)
+	            into file("${buildDir}/webjars-content/${artifact.name}")
+	        }
+	        copy {
+	            from "${buildDir}/webjars-content/${artifact.name}/META-INF/resources/webjars/${artifact.name}/${upStreamVersion}",
+	                 "${buildDir}/webjars-content/${artifact.name}/META-INF/resources/webjars/${artifact.name}/${artifact.moduleVersion.id.version}"
+	
+	            into "src/main/webapp/ext/webjar/${artifact.name}"
+	        }
+        }
+
+    }
+}
+
+
+
+
+def buildIndexHtmlContent(cssFiles, jsFiles){
+
+	StringBuilder sbHtml = new StringBuilder();
+	
+	sbHtml.append("<!DOCTYPE html>\n")
+	sbHtml.append("<html lang=\"en\">\n")
+	sbHtml.append("<head>\n\t<meta charset=\"utf-8\">\n")
+	sbHtml.append("\t<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n")
+	sbHtml.append("\t<meta name=\"description\" content=\"Java For Good\">\n")
+	sbHtml.append("\t<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n")
+	sbHtml.append("\t<meta name=\"author\" content=\"Ramazan Karakaya\">\n\n")
+	
+	cssFiles.each {String sFilePath ->
+		sbHtml.append("\t<link type=\"text/css\" rel=\"stylesheet\" href=\"" +sFilePath+  "\"/>\n");
+	}
+	
+	sbHtml.append("</head>\n<body>\n")
+	sbHtml.append("\t" + new File("${webappDir}/_index_html_body.html").getText("UTF-8"));
+	
+	jsFiles.each {String sFilePath ->
+		sbHtml.append("\t<script type=\"text/javascript\" src=\""+sFilePath+"\"></script>\n");
+	}
+	
+	sbHtml.append("<script type=\"text/javascript\">\n");
+	
+	sbHtml.append("\tangular.module('jgood').constant('jg.webProperties',{");
+	
+	project.filterTokens.each{ k, v ->
+		if(k.startsWith("_web_")){
+			sbHtml.append(k.substring(5));
+			sbHtml.append(":\'");
+			sbHtml.append(v);
+			sbHtml.append("',");
+		}
+	}
+	sbHtml.append("});\n");
+	sbHtml.append("\tangular.element(document).ready(function () {angular.bootstrap(\$('html')[0], ['jgood']);});\n");
+	sbHtml.append("</script>\n");
+    
+		
+    
+	
+	sbHtml.append("</body></html>")
+
+	return sbHtml.toString();
+}
+
+
+def getOrderedAppJsFiles(){
+	files("${webappDir}/app/app_first.js")+
+	fileTree(dir: "${webappDir}/app/common", includes: ['**/*.js']) + 
+	fileTree(dir: "${webappDir}/app/modules", includes: ['**/*.js']) 
+}
+
+
+// Combine app scripts into one single file
+task combineAppJsFiles(type: com.eriwen.gradle.js.tasks.CombineJsTask) {
+    source = getOrderedAppJsFiles();
+    dest = file("${buildDir}/minified-scripts/jgood.js")
+
+    doFirst {
+        println("Combining all Jgood scripts...");
+        delete(file("${buildDir}/minified-scripts/jgood.js"))
+    }
+}
+
+// Combine vendor scripts into one single file
+task combineExtJsFiles(type: com.eriwen.gradle.js.tasks.CombineJsTask) {
+	List<File> fileList =  new ArrayList<File>();
+	extJsFiles.each {String s ->
+		fileList.add(new File("${webappDir}/"+s))
+	}
+    source = fileList;
+    dest = file("${buildDir}/minified-scripts/vendor.js")
+
+    doFirst {
+        println("Combining all Jgood scripts...");
+        delete(file("${buildDir}/minified-scripts/vendor.js"))
+    }
+}
+
+// Combine css files into one single file
+task combineAllCss(type: com.eriwen.gradle.js.tasks.CombineJsTask) {
+	List<File> fileList =  new ArrayList<File>();
+	cssFiles.each {String s ->
+		fileList.add(new File("${webappDir}/"+s))
+	}
+    source = fileList;
+    dest = file("${buildDir}/minified-css/all.css")
+
+    doFirst {
+        println("Combining all css files...");
+        delete(file("${buildDir}/minified-css/all.css"))
+    }
+}
+
+
+// Minify combined app's JS file
+task minifyAppJs(type: com.eriwen.gradle.js.tasks.MinifyJsTask) {
+    source = combineAppJsFiles
+    dest = file("${buildDir}/minified-scripts/jgood.min.js")
+    sourceMap = file("${buildDir}/minified-scripts/jgood.min.js.map")
+    closure {
+        warningLevel = 'QUIET'
+    }
+
+    doFirst {
+        println("Minimizing combined app js file...")
+        delete(file("${buildDir}/minified-scripts/jgood.min.js"))
+        delete(file("${buildDir}/minified-scripts/jgood.min.js.map"))
+    }
+}
+
+// Minify combined external JS libs
+task minifyExtJs(type: com.eriwen.gradle.js.tasks.MinifyJsTask) {
+    source = combineExtJsFiles
+    dest = file("${buildDir}/minified-scripts/vendor.min.js")
+    sourceMap = file("${buildDir}/minified-scripts/vendor.min.js.map")
+    closure {
+        warningLevel = 'QUIET'
+    }
+
+    doFirst {
+        println("Minimizing combined app js file...")
+        delete(file("${buildDir}/minified-scripts/vendor.min.js"))
+        delete(file("${buildDir}/minified-scripts/vendor.min.js.map"))
+    }
+}
+
+task minifyAllCss(type: com.eriwen.gradle.css.tasks.MinifyCssTask) {
+    source = combineAllCss
+    dest = "${buildDir}/minified-css/all.min.css"
+
+    doFirst {
+        println("Minimizing all.css file to all.min.css")
+        delete(file("${buildDir}/minified-css/all.min.css"))
+    }
+}
+
+task buildIndexHtmlDev  {
+	dependsOn processResources
+	doFirst {
+		List<String> jsFiles =  new ArrayList<String>();
+		jsFiles.addAll(extJsFiles)
+		 
+		def appJsFiles =  getOrderedAppJsFiles()
+		appJsFiles.each {File f ->
+			println f.path
+			String path = f.path.replace('\\', '/');
+			int k = path.indexOf('/webapp/');
+			jsFiles.add(path.substring(k + 8));
+		}
+	    
+		new File("${webappDir}/index_dev.html").write(buildIndexHtmlContent(cssFiles,jsFiles));
+	}			
+}
+
+task buildIndexHtmlDist {
+	dependsOn minifyAppJs	
+	dependsOn minifyExtJs
+	dependsOn minifyAllCss	
+	
+	doFirst{
+		new File("${buildDir}/index.html").write(buildIndexHtmlContent(["css/all.css"],["js/vendor.min.js","js/jgood.min.js"]));
+	}
+}
+
+
+
+distZip{
+  dependsOn buildIndexHtmlDist
+  
+    from("${buildDir}/minified-scripts", {
+        into 'js'
+    })
+
+    from("${buildDir}/minified-css", {
+        into 'css'
+    })
+
+    from("src/main/webapp/resources", {
+        into 'resources'
+    })
+    
+	from("src/main/webapp/assets/img", {
+        into 'assets/img'
+    })
+        
+	from("src/main/webapp/assets/css", {
+        into 'css'
+        include '**/*.png'
+    })
+    
+	from("src/main/webapp/ext/webjar/font-awesome/fonts", {
+        into 'fonts'
+    })
+    
+    from{"${buildDir}/index.html"}
+    
+    from("${webappDir}/app", {
+        include "**/*.html"
+        into 'app'
+    })
+    
+      
+}
+
+
+
+
+
+

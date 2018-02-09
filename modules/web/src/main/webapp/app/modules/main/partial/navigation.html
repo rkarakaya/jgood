@@ -1,0 +1,27 @@
+<nav class="navbar-default navbar-static-side" role="navigation">
+    <div class="sidebar-collapse">
+        <ul side-navigation class="nav metismenu" id="side-menu">
+            <li class="nav-header">
+                <div class="logo-element">
+                    <img alt="jgood" src="assets/img/favicon.ico">
+                </div>
+            </li>
+
+            <li ui-sref-active="active">
+                <a ui-sref="index.dashboard"><i class="fa fa-dashboard"></i> <span class="nav-label">Dashboard</span></a>
+            </li>
+
+            <fn-permission if-user-any="ROLE_ADMIN">
+                <li ui-sref-active="active">
+                    <a ui-sref="index.informings"><i class="fa fa-table"></i> <span class="nav-label">Informings</span></a>
+                </li>
+            </fn-permission>
+
+            <fn-permission if-user-any="ROLE_ADMIN, ROLE_USER">
+                <li ui-sref-active="active">
+                    <a ui-sref="index.reportus"><i class="fa fa-table"></i> <span class="nav-label">Report Us</span></a>
+                </li>
+            </fn-permission>
+        </ul>
+    </div>
+</nav>

@@ -1,0 +1,150 @@
+import org.apache.tools.ant.filters.ReplaceTokens
+
+import java.text.SimpleDateFormat
+
+buildscript {
+	repositories {
+	    mavenLocal()
+	    mavenCentral()
+	    jcenter()
+	}
+
+}
+
+plugins {
+	id 'net.saliman.properties' version '1.4.6'
+}
+
+Date buildTimeAndDate = new Date()
+
+
+ext {
+	buildDate = new SimpleDateFormat('yyyy-MM-dd').format(buildTimeAndDate)
+	buildTime = new SimpleDateFormat('HH:mm:ss.SSSZ').format(buildTimeAndDate)
+
+	versions = [
+		spring: '4.2.2.RELEASE',
+		spring_security: '4.0.2.RELEASE',
+		jackson: '2.6.2',
+		log: '1.7.10'
+	]
+
+	libraries = [
+		javax_servlet_api: "javax.servlet:javax.servlet-api:3.0.1",
+		javax_transaction_api: "javax.transaction:javax.transaction-api:1.2",
+		mongo_java_driver: "org.mongodb:mongo-java-driver:3.2.2",
+
+		commons_io: "commons-io:commons-io:2.4",
+		commons_beanutils: 'commons-beanutils:commons-beanutils:1.8.0',
+		commons_lang: 'org.apache.commons:commons-lang3:3.4',
+		commons_codec: 'commons-codec:commons-codec:1.6',
+
+		guava: 'com.google.guava:guava:18.0',
+
+		spring_base: [
+			"org.springframework:spring-beans:${versions.spring}",
+			"org.springframework:spring-context:${versions.spring}",
+			"org.springframework:spring-context-support:${versions.spring}",
+			"org.springframework:spring-orm:${versions.spring}",
+			"org.springframework:spring-aspects:${versions.spring}",
+			"org.springframework:spring-test:${versions.spring}",
+		],
+
+		spring_web: [
+			"org.springframework:spring-web:${versions.spring}",
+			"org.springframework:spring-webmvc:${versions.spring}"
+		],
+
+		logging: [
+			"org.slf4j:slf4j-log4j12:${versions.log}",
+			"org.slf4j:slf4j-api:${versions.log}",
+			"org.slf4j:jcl-over-slf4j:${versions.log}"
+		],
+
+		spring_security: [
+			"org.springframework.security:spring-security-web:${versions.spring_security}",
+			"org.springframework.security:spring-security-config:${versions.spring_security}"
+		],
+
+
+		jackson: [
+			"com.fasterxml.jackson.core:jackson-core:${versions.jackson}",
+			"com.fasterxml.jackson.core:jackson-databind:${versions.jackson}",
+			"com.fasterxml.jackson.core:jackson-annotations:${versions.jackson}"
+		],
+		
+		gson: "com.google.code.gson:gson:2.8.0",
+		junit: "junit:junit:4.12",
+		c3p0: "c3p0:c3p0:0.9.1.2",
+		jamon: "com.jamonapi:jamon:2.81",
+
+		mysql_connector: 'mysql:mysql-connector-java:5.1.11',
+		hibernate_entitymanager: 'org.hibernate:hibernate-entitymanager:5.0.0.CR3',
+	]
+	
+	
+
+}
+
+subprojects {
+	apply plugin: 'java'
+	apply plugin: 'net.saliman.properties'
+	apply plugin: 'eclipse-wtp'
+
+	sourceCompatibility = 1.7
+	targetCompatibility = 1.7
+
+	eclipse {
+		classpath {
+			downloadSources = true
+			downloadJavadoc = false
+		}
+	}
+
+	repositories {
+		mavenLocal()
+		mavenCentral()
+	}
+
+
+
+    task processEnvResources() {
+        copy {
+            from "${project.projectDir}/src/main/config-template"
+            include '*.properties'
+            include '*.xml'
+            into "${project.projectDir}/src/main/resources"
+            filter(ReplaceTokens, tokens: project.filterTokens)
+        }
+        copy {
+            from "${project.projectDir}/src/test/config-template"
+            include '*.properties'
+            include '*.xml'
+            into "${project.projectDir}/src/test/resources"
+            filter(ReplaceTokens, tokens: project.filterTokens)
+        }
+        
+    }
+
+    processResources.outputs.upToDateWhen{ false }
+    processEnvResources.outputs.upToDateWhen{ false }
+    processResources.dependsOn processEnvResources
+
+	task deployLocal << {
+		if (project.plugins.hasPlugin('war')) {
+			copy {
+				from project.configurations.archives.allArtifacts.files
+				into "$wildfly_home/standalone/deployments/"
+			}
+		} 
+	}
+	
+
+	deployLocal.dependsOn assemble
+}
+
+
+
+
+
+

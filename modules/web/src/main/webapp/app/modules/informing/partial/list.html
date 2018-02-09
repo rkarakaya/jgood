@@ -1,0 +1,50 @@
+<div class="row">
+    <div class="col-md-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h3>
+                    Recent Informings
+                </h3>
+            </div>
+            <div class="ibox-content">
+                <div class="table-column-hide table-responsive">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>id</th>
+                            <th>Informer</th>
+                            <th>Text</th>
+                            <th>Status</th>
+                            <th>Create Date</th>
+                            <th class="align-center">Action</th>
+                        </tr>
+
+                        </thead>
+
+                        <tbody>
+                        <tr ng-repeat="inf in ctrl.recentItems.list">
+                            <td>{{inf.id}}</td>
+                            <td>{{inf.informedBy}}</td>
+                            <td>{{inf.text}}</td>
+                            <td>{{inf.status}}</td>
+                            <td>{{inf.createDate | date:'medium'}}</td>
+                            <td class="align-center">
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-info" ng-click="ctrl.closeInformingAt($index)" ng-if="ctrl.canClose(inf)">
+                                        <i class="fa fa-close" title="close"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" ng-click="ctrl.deleteInformingAt($index)" ng-if="ctrl.canDelete(inf)">
+                                        <i class="fa fa-trash-o" title="delete"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <div  ng-if="ctrl.recentItems.list.length == 0">There is no new informings</div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

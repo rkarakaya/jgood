@@ -1,0 +1,20 @@
+include "app-common"
+include "app-dao"
+include "app-service"
+include "app-rest"
+include "web"
+
+rootProject.name = 'jgood'
+rootProject.children.each { project ->
+    String fileBaseName = project.name.replaceAll("\\p{Upper}") { "-${it.toLowerCase()}" }
+    String projectDirName="modules/$fileBaseName"
+    if (fileBaseName.startsWith('app-')) {
+        projectDirName = "modules/app/modules/$fileBaseName"
+    } 
+	println projectDirName
+    project.projectDir = new File(settingsDir, projectDirName)
+    project.buildFileName = "build.gradle"
+    assert project.projectDir.isDirectory()
+    assert project.buildFile.isFile()
+}
+

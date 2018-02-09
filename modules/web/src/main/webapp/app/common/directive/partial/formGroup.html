@@ -1,0 +1,17 @@
+<div class="form-group" ng-class="{'has-error':isError,'no-error':!isError}">
+    <div class="row">
+        <label class="control-label bold" ng-class="labelColClass">{{labelKey|text}}</label>
+        <div class="controls tc" ng-class="controlColClass">
+
+        </div>
+
+        <div class="help-block" ng-class="helpColClass" ng-bind-html="helpMessage" ng-if="helpMessage">
+        </div>
+
+        <div class="help-block" ng-class="helpColClass" ng-include="helpMessageTpl" ng-if="helpMessageTpl">
+        </div>
+
+    </div>
+    <div class="hr-line-dashed"></div>
+</div>
+

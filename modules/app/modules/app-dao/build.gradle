@@ -1,0 +1,12 @@
+
+dependencies {
+    compile project(':app-common')
+    compile libraries.spring_base
+    compile libraries.mongo_java_driver
+    compile libraries.javax_transaction_api
+}
+
+
+
+
+

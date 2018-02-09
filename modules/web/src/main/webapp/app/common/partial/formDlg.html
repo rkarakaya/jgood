@@ -1,0 +1,15 @@
+<div ng-form="dialogForm">
+    <div class="modal-header">
+        <button type="button" class="close" ng-click="close()"><span class="icon-close"></span></button>
+        <h3>{{titleKey|text:titleParams}}</h3>
+    </div>
+    <div class="modal-body form-horizontal">
+        <div class="paddingT15 paddingB15" ng-include="formTemplateUrl">
+
+        </div>
+    </div>
+    <div class="modal-footer">
+        <a href="" class="btn btn-primary" ng-click="ok(dialogForm)">{{'general.ok'|text}} </a>
+        <a href="" class="btn btn-default" ng-click="cancel()">{{'general.cancel'|text}}</a>
+    </div>
+</div>

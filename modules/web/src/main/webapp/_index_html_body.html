@@ -1,0 +1,31 @@
+<div ng-cloak class="container-fluid no-internet-connection" ng-class="{show: network.failure}">
+    <div class="row">
+        <div clasS="col-md-6 col-md-offset-3">
+            <div class="alert alert-danger">
+                <p><b>
+                    <i style="font-size:20px;" class="fa fa-exclamation-circle" aria-hidden="true"></i>
+                    &nbsp;&nbsp;We are unable to connect to Jgood servers... Please check your internet connection!
+                </b></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="beforeJgLoaded" ng-if="!isJgLoaded">
+    <div class="colorful-spinner"></div>
+    <div class="welcome-title">Welcome to JGood</div>
+</div>
+
+<div>
+    <!-- Main view  -->
+    <div ui-view auto-scroll="false"></div>
+
+    <script type="text/ng-template" id="fnBlockUiDefaultTemplate.html">
+        <div class="fn-block-ui-overlay"></div>
+        <div class="fn-block-ui-message-container" aria-live="assertive" aria-atomic="true">
+            <div class="fn-block-ui-message" style="background-color:inherit;"><img style="width:30px;height:30px;" src="assets/img/wait.gif"></div>
+        </div>
+    </script>
+</div>
+
+
